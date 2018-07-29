@@ -1,0 +1,17 @@
+{
+  "name": "async-demo",
+  "version": "1.0.0",
+  "description": "Document viewer app to demonstrate async JavaScript features",
+  "main": "doc-viewer.js",
+  "dependencies": {    
+  },
+  "devDependencies": {
+    "mocha": "^5.2.0",
+    "xhr-mock": "^2.4.1"
+  },
+  "scripts": {
+    "test": "mocha"
+  },
+  "author": "Vince Wong",
+  "license": "ISC"
+}
