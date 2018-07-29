@@ -4,6 +4,7 @@
   "description": "Document viewer app to demonstrate async JavaScript features",
   "main": "doc-viewer.js",
   "dependencies": {
+    "sinon": "^6.1.4",
     "xhr-mock": "^2.4.1"
   },
   "devDependencies": {

@@ -45,4 +45,35 @@
 
 		return delay(response, Math.random() * 5000);
 	});
+	
+	/*
+	var server = sinon.fakeServer.create();
+
+		server.respondWith('GET', 'story', xhr => {
+			xhr.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({
+				title: 'My Story',
+				chapters: ['chapter1', 'chapter2', 'chapter3', 'chapter4']
+			}));	
+		});
+	
+
+	var chapters = {
+		chapter1: '1. Humpty Dumpty sat on a wall,',
+		chapter2: '2. Humpty Dumpty had a great fall;',
+		chapter3: '3. All the king\'s horses and all the king\'s men',
+		chapter4: '4. Couldn\'t put Humpty together again.' 
+	};
+
+	server.respondWith('GET', /^chapter/, xhr => {
+		var id = xhr.url.replace('chapter?id=', '');
+		var text = chapters[id];
+
+		xhr.respond(200, { 'Content-Type': 'application/json' }, JSON.stringify({
+			id,
+			text
+		}));
+	});
+
+	server.respondImmediately = true;
+	*/
 })();

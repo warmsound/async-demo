@@ -23,11 +23,11 @@ class StoryViewer {
 	loadStory() {
 		var xhr = new XMLHttpRequest()
 		xhr.open('get', 'story');
-		xhr.onreadystatechange = () => {
+		xhr.addEventListener('readystatechange', () => {
 			if ((xhr.readyState === XMLHttpRequest.DONE) && (xhr.status === 200)) {
 				this.onStoryLoaded(xhr.responseText);
 			}
-		};
+		});
 		xhr.send();
 	}
 
@@ -44,11 +44,11 @@ class StoryViewer {
 	loadChapter(id) {
 		var xhr = new XMLHttpRequest()
 		xhr.open('get', `chapter?id=${id}`);
-		xhr.onreadystatechange = () => {
+		xhr.addEventListener('readystatechange', () => {
 			if ((xhr.readyState === XMLHttpRequest.DONE) && (xhr.status === 200)) {
 				this.onChapterLoaded(xhr.responseText);
 			}
-		};
+		});
 		xhr.send();
 	}
 
