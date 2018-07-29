@@ -1,0 +1,20 @@
+<html>
+	<head>
+		<title>Story Viewer [Loading...]</title>
+
+		<link rel="stylesheet" type="text/css" href="story-viewer.css">
+
+		<script src="lib/xhr-mock.js"></script>
+		<script src="mock-server.js"></script>
+		<script src="story-viewer.js"></script>
+		<script>
+			window.addEventListener("load", event => {
+				new StoryViewer();
+			});
+		</script>
+	</head>
+	<body>
+		<img id="loader" src="loading.gif"/>
+		<h1 id="title"/>
+	</body>
+</html>
