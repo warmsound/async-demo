@@ -1,0 +1,27 @@
+<html>
+	<head>
+		<title>Mocha Tests</title>
+		<link href="./node_modules/mocha/mocha.css" rel="stylesheet" />
+
+		<link rel="stylesheet" type="text/css" href="story-viewer.css">
+
+		<script src="./node_modules/xhr-mock/dist/xhr-mock.js"></script>
+		<script src="story-viewer.js"></script>
+
+		<script src="./node_modules/mocha/mocha.js"></script>
+		<script src="./node_modules/chai/chai.js"></script>
+		<script>mocha.setup('bdd');</script>
+		<script src="test/test.js"></script>
+	</head>
+
+	<body>
+		<div id="mocha"/>
+		<img id="loader" src="loading.gif"/>
+		<h1 id="title"/>
+	</body>
+
+	<!-- Entry point. -->
+	<script>
+		mocha.run();
+	</script>
+</html>

@@ -7,13 +7,11 @@ class StoryViewer {
 	setStoryTitle(title) {
 		var titleElement = document.getElementById('title');
 		titleElement.innerText = title;
-
-		document.title = `Story Viewer [${title}]`
 	}
 
-	insertChapter(text) {
+	insertChapter(id, text) {
 		var div = document.createElement('div');
-		div.innerText = text;
+		div.innerText = `[${id}] ${text}`;
 		document.body.appendChild(div);
 	}
 
@@ -56,6 +54,6 @@ class StoryViewer {
 
 	onChapterLoaded(data) {
 		var chapter = JSON.parse(data);
-		this.insertChapter(chapter.text);
+		this.insertChapter(chapter.id, chapter.text);
 	}
 }
