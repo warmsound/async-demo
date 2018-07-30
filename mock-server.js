@@ -12,12 +12,10 @@
 	mock.setup();
 	
 	mock.get('story', (req, res) => {
-		var response = res
-			.status(200)
-			.body(JSON.stringify({
-				title: 'My Story',
-				chapters: ['chapter1', 'chapter2', 'chapter3', 'chapter4']
-			}));
+		var response = res.status(200).body(JSON.stringify({
+			title: 'My Story',
+			chapters: ['chapter1', 'chapter2', 'chapter3', 'chapter4']
+		}));
 
 		return delay(response, Math.random() * 5000);
 	});
@@ -36,12 +34,10 @@
 
 		var text = chapters[id];
 
-		var response = res
-			.status(200)
-			.body(JSON.stringify({
-				id,
-				text
-			}));
+		var response = res.status(200).body(JSON.stringify({
+			id,
+			text
+		}));
 
 		return delay(response, Math.random() * 5000);
 	});
