@@ -11,8 +11,20 @@ class StoryViewer {
 
 	insertChapter(id, text) {
 		var div = document.createElement('div');
+		div.classList.add('chapter');
 		div.innerText = `[${id}] ${text}`;
 		document.body.appendChild(div);
+	}
+
+	reset() {
+		this.setLoaderVisible(false);
+		this.setStoryTitle('');
+		
+		var chapters = document.querySelectorAll('.chapter');
+		for (let i = 0; i < chapters.length; ++i) {
+			let chapter = chapters[i];
+			chapeter.parentNode.removeChild(chapter);
+		}
 	}
 
 	constructor() {
