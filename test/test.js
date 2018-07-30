@@ -89,7 +89,7 @@ describe('StoryViewer', () => {
 
 		expect(setLoaderVisibleSpy.calledWith(false)).to.be.false;
 
-		// sendAsyncSpy() returns a Promise that resolves when the response has been sent.
+		// sendAsyncSpy() returns a Promise that resolves when the above response has been sent.
 		// Test is done() once Promise returned by then() resolves.
 		return sendAsyncSpy.returnValues[0].then(() => {
 			expect(setLoaderVisibleSpy.calledWith(false)).to.be.true;
@@ -138,4 +138,65 @@ describe('StoryViewer', () => {
 			done();
 		}, 2000);
 	}).timeout(5000);
+
+	// First chapter should be requested; when first is received, second should be requested, etc.
+	it('Should request chapters in order serially immediately once story is received', () => {
+		XHRMock.get('story', (req, res) => {
+			return res.status(200).body(JSON.stringify({
+				title: 'My Story',
+				chapters: ['chapter1', 'chapter2', 'chapter3'],
+				serial: true
+			}));
+		});
+
+		XHRMock.get(/^chapter/, (req, res) => {
+			var query = req.url().query;
+			var id = query && query.id;
+
+			return res.status(200).body(JSON.stringify({
+				id,
+				text: ''
+			}));
+		});
+
+		viewer = new StoryViewer();
+
+		// After story response.
+		return sendAsyncSpy.returnValues[0].then(() => {
+			expect(openSpy.lastCall.calledWith('get', 'chapter?id=chapter1')).to.be.true;
+
+			// After chapter1 response.
+			return sendAsyncSpy.returnValues[1].then(() => {
+				expect(openSpy.lastCall.calledWith('get', 'chapter?id=chapter2')).to.be.true;
+
+				// After chapter 2 response.
+				return sendAsyncSpy.returnValues[2].then(() => {
+					expect(openSpy.lastCall.calledWith('get', 'chapter?id=chapter3')).to.be.true;
+				});
+			});
+		});
+	});
+
+	// All chapters should be requested in any order.
+	it('Should request all chapters in parallel immediately once story is received', () => {
+		XHRMock.get('story', (req, res) => {
+			return res.status(200).body(JSON.stringify({
+				title: 'My Story',
+				chapters: ['chapter1', 'chapter2', 'chapter3']
+			}));
+		});
+
+		viewer = new StoryViewer();
+
+		return sendAsyncSpy.returnValues[0].then(() => {
+
+			// In parallel mode, chapters can be requested in any order.
+			expect(openSpy.calledWith('get', 'chapter?id=chapter1')).to.be.true;
+			expect(openSpy.calledWith('get', 'chapter?id=chapter2')).to.be.true;
+			expect(openSpy.calledWith('get', 'chapter?id=chapter3')).to.be.true;
+
+			// First spy call is initial story request; chapters after.
+			expect(sendAsyncSpy.callCount).to.equal(4);
+		});
+	});
 });

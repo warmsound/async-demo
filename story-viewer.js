@@ -23,7 +23,7 @@ class StoryViewer {
 		var chapters = document.querySelectorAll('.chapter');
 		for (let i = 0; i < chapters.length; ++i) {
 			let chapter = chapters[i];
-			chapeter.parentNode.removeChild(chapter);
+			chapter.parentNode.removeChild(chapter);
 		}
 	}
 
@@ -40,15 +40,15 @@ class StoryViewer {
 		this.setLoaderVisible(true);
 
 		this.story = null;
-		this.loadStory();
+		this.loadStory(this.onStoryLoaded.bind(this));
 	}	
 
-	loadStory() {
+	loadStory(callback) {
 		var xhr = new XMLHttpRequest()
 		xhr.open('get', 'story');
 		xhr.addEventListener('readystatechange', () => {
 			if ((xhr.readyState === XMLHttpRequest.DONE) && (xhr.status === 200)) {
-				this.onStoryLoaded(xhr.responseText);
+				callback && callback.call(this, xhr.responseText);
 			}
 		});
 		xhr.send();
@@ -63,25 +63,46 @@ class StoryViewer {
 		this.story = JSON.parse(data);
 		this.setStoryTitle(this.story.title);
 
-		for (let i = 0; i < this.story.chapters.length; ++i) {
-			this.loadChapter(this.story.chapters[i]);
+		// Chapter requests should be in series: recursive callbacks!
+		if (this.story.serial) {
+			
+			// Work on copy of chapters array.
+			var chapters = [...this.story.chapters];
+
+			function nextChapter() {
+
+				// Shift first chapter from array, and pass to loadChapter().
+				this.loadChapter(chapters.shift(), (id, data) => {
+					this.onChapterLoaded(id, data);
+
+					// Process next chapter, if any remaining.
+					chapters.length && nextChapter.call(this)
+				});
+			}			
+			nextChapter.call(this); // Get the loop started.
+
+		// Chapter requests should be in parallel.
+		} else {
+			for (let i = 0; i < this.story.chapters.length; ++i) {
+				this.loadChapter(this.story.chapters[i], this.onChapterLoaded.bind(this));
+			}
 		}
 	}
 
-	loadChapter(id) {
+	loadChapter(id, callback) {
 		var xhr = new XMLHttpRequest()
 		xhr.open('get', `chapter?id=${id}`);
 		xhr.addEventListener('readystatechange', () => {
 			if ((xhr.readyState === XMLHttpRequest.DONE) && (xhr.status === 200)) {
-				this.onChapterLoaded(xhr.responseText);
+				callback && callback.call(this, id, xhr.responseText);
 			}
 		});
 		xhr.send();
 	}
 
-	onChapterLoaded(data) {
+	onChapterLoaded(id, data) {
 		var chapter = JSON.parse(data);
-		this.insertChapter(chapter.id, chapter.text);
+		this.insertChapter(id, chapter.text);
 	}
 }
 
