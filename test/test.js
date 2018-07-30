@@ -39,6 +39,7 @@ describe('StoryViewer', () => {
 
 	afterEach(() => {
 		XHRMock.reset(); // Reset request handlers.
+		viewer.reset(); // Reset viewer *before* resetting spies.
 
 		openSpy.resetHistory();
 		sendAsyncSpy.resetHistory();
@@ -46,8 +47,6 @@ describe('StoryViewer', () => {
 		setLoaderVisibleSpy.resetHistory();
 		setStoryTitleSpy.resetHistory();
 		insertChapterSpy.resetHistory();
-
-		viewer.reset();
 	});
 
 	after(() => {
@@ -76,7 +75,7 @@ describe('StoryViewer', () => {
 		expect(sendAsyncSpy.called).to.be.true;
 	});
 
-	it('Should hide loader immediately when story is received (response delayed by 2s)', () => {
+	it('Should hide loader immediately once story is received (response takes 2s)', () => {
 		XHRMock.get('story', (req, res) => {
 			var response = res.status(200).body(JSON.stringify({
 				title: 'My Story',
@@ -87,6 +86,8 @@ describe('StoryViewer', () => {
 		});
 
 		viewer = new StoryViewer();
+
+		expect(setLoaderVisibleSpy.calledWith(false)).to.be.false;
 
 		// sendAsyncSpy() returns a Promise that resolves when the response has been sent.
 		// Test is done() once Promise returned by then() resolves.
@@ -95,7 +96,7 @@ describe('StoryViewer', () => {
 		});
 	}).timeout(5000);
 
-	it('Should set story title immediately when story is received (response delayed by 2s)', () => {
+	it('Should set story title immediately once story is received (response takes 2s)', () => {
 		XHRMock.get('story', (req, res) => {
 			var response = res.status(200).body(JSON.stringify({
 				title: 'My Story',
@@ -107,12 +108,13 @@ describe('StoryViewer', () => {
 
 		viewer = new StoryViewer();
 
+		expect(setStoryTitleSpy.called).to.be.false;
 		return sendAsyncSpy.returnValues[0].then(() => {
 			expect(setStoryTitleSpy.calledWith('My Story')).to.be.true;
 		});
 	}).timeout(5000);
 
-	it('Should show loader for at least 1 second', done => {
+	it('Should show loader for at least 1 second (response is immediate)', done => {
 		XHRMock.get('story', (req, res) => {
 			return res.status(200).body(JSON.stringify({
 				title: 'My Story',

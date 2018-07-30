@@ -28,7 +28,18 @@ class StoryViewer {
 	}
 
 	constructor() {
+		// Set a timeout, so we can check that loader has been shown for minimum time once story has loaded.
+		this.minLoaderTimeout = setTimeout(() => {
+			this.minLoaderTimeout = null;
+
+			// If story has loaded within minimum time, only now hide loader.
+			if (this.story) {
+				this.setLoaderVisible(false);
+			}
+		}, StoryViewer.MIN_LOADER_TIME);
 		this.setLoaderVisible(true);
+
+		this.story = null;
 		this.loadStory();
 	}	
 
@@ -44,12 +55,16 @@ class StoryViewer {
 	}
 
 	onStoryLoaded(data) {
-		var story = JSON.parse(data);
-		this.setStoryTitle(story.title);
-		this.setLoaderVisible(false);
+		// If minimum loader time has expired, hide loader (otherwise, hide loader when minimum time expires).
+		if (!this.minLoaderTimeout) {
+			this.setLoaderVisible(false);
+		}
 
-		for (let i = 0; i < story.chapters.length; ++i) {
-			this.loadChapter(story.chapters[i]);
+		this.story = JSON.parse(data);
+		this.setStoryTitle(this.story.title);
+
+		for (let i = 0; i < this.story.chapters.length; ++i) {
+			this.loadChapter(this.story.chapters[i]);
 		}
 	}
 
@@ -69,3 +84,5 @@ class StoryViewer {
 		this.insertChapter(chapter.id, chapter.text);
 	}
 }
+
+StoryViewer.MIN_LOADER_TIME = 1000;
