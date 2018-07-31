@@ -79,7 +79,7 @@ describe('StoryViewer', () => {
 		expect(sendAsyncSpy.called).to.be.true;
 	});
 
-	it('Should hide loader immediately once story is received (response takes 2s)', () => {
+	it('Should hide loader immediately once story is received (response takes 2s)', done => {
 		XHRMock.get('story', (req, res) => {
 			var response = res.status(200).body(JSON.stringify({
 				title: 'My Story',
@@ -94,13 +94,16 @@ describe('StoryViewer', () => {
 		expect(setLoaderVisibleSpy.calledWith(false)).to.be.false;
 
 		// sendAsyncSpy() returns a Promise that resolves when the above response has been sent.
-		// Test is done() once Promise returned by then() resolves.
-		return sendAsyncSpy.returnValues[0].then(() => {
-			expect(setLoaderVisibleSpy.calledWith(false)).to.be.true;
+		// Perform checks on next frame, to allow microtasks (Promises) to run first.
+		sendAsyncSpy.returnValues[0].then(() => {
+			setTimeout(() => {
+				expect(setLoaderVisibleSpy.calledWith(false)).to.be.true;
+				done();
+			}, 0);
 		});
 	}).timeout(5000);
 
-	it('Should set story title immediately once story is received (response takes 2s)', () => {
+	it('Should set story title immediately once story is received (response takes 2s)', done => {
 		XHRMock.get('story', (req, res) => {
 			var response = res.status(200).body(JSON.stringify({
 				title: 'My Story',
@@ -113,8 +116,13 @@ describe('StoryViewer', () => {
 		viewer = new StoryViewer();
 
 		expect(setStoryTitleSpy.called).to.be.false;
-		return sendAsyncSpy.returnValues[0].then(() => {
-			expect(setStoryTitleSpy.calledWith('My Story')).to.be.true;
+
+		// After story response.
+		sendAsyncSpy.returnValues[0].then(() => {
+			setTimeout(() => {
+				expect(setStoryTitleSpy.calledWith('My Story')).to.be.true;
+				done();
+			}, 0);			
 		});
 	}).timeout(5000);
 
@@ -134,16 +142,18 @@ describe('StoryViewer', () => {
 		// Loader should not be hidden immediately after receiving story.
 		sendAsyncSpy.returnValues[0].then(() => {
 			expect(setLoaderVisibleSpy.calledWith(false)).to.be.false;
+		}).then(() => {
+			// Loader should be hidden after 1s (check after 2s).
+			setTimeout(() => {
+				expect(setLoaderVisibleSpy.calledWith(false)).to.be.true;
+				done();
+			}, 2000);
 		});
 
-		// Loader should be hidden after 1s (check after 2s).
-		setTimeout(() => {
-			expect(setLoaderVisibleSpy.calledWith(false)).to.be.true;
-			done();
-		}, 2000);
+		
 	}).timeout(5000);
 
-	it('Should report returned error if story is not found', () => {
+	it('Should report returned error if story is not found', done => {
 		var status = 'Story not found';
 
 		XHRMock.get('story', (req, res) => {
@@ -155,8 +165,11 @@ describe('StoryViewer', () => {
 		viewer = new StoryViewer();
 
 		expect(reportErrorSpy.called).to.be.false;
-		return sendAsyncSpy.returnValues[0].then(() => {
-			expect(reportErrorSpy.calledWith(status)).to.be.true;
+		sendAsyncSpy.returnValues[0].then(() => {
+			setTimeout(() => {
+				expect(reportErrorSpy.calledWith(status)).to.be.true;
+				done();
+			}, 0);
 		});
 	});
 

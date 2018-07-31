@@ -1,4 +1,5 @@
 class StoryViewer {
+	//#region Pre-defined API
 	setLoaderVisible(bool) {
 		var loader = document.getElementById('loader');
 		loader.style.visibility = (bool ? 'visible' : 'hidden');
@@ -16,8 +17,8 @@ class StoryViewer {
 		document.body.appendChild(div);
 	}
 
-	reportError(status, message) {
-		console.error(`${status}: ${message}`);
+	reportError(status) {
+		console.error(status);
 	}
 
 	reset() {
@@ -33,6 +34,7 @@ class StoryViewer {
 			chapter.parentNode.removeChild(chapter);
 		}
 	}
+	//#endregion
 
 	constructor() {
 		this.story = null;
@@ -49,7 +51,7 @@ class StoryViewer {
 		}, StoryViewer.MIN_LOADER_TIME);
 		this.setLoaderVisible(true);
 		
-		this.loadStory(this.onStoryLoaded.bind(this), this.onError.bind(this));
+		this.loadStory(this.onStoryLoaded.bind(this), this.reportError.bind(this));
 	}
 
 	loadStory(onSuccess, onError) {
@@ -60,16 +62,11 @@ class StoryViewer {
 				if (xhr.status === 200) {
 					onSuccess && onSuccess.call(this, xhr.responseText);
 				} else if (xhr.status === 404) {
-					onError && onError.call(this, xhr.statusText, xhr.responseText);
+					onError && onError.call(this, xhr.statusText);
 				}
 			}
 		});
 		xhr.send();
-	}
-
-	onError(status, response) {
-		var response = JSON.parse(response);
-		this.reportError(status, response.error);
 	}
 
 	onStoryLoaded(data) {
@@ -95,7 +92,7 @@ class StoryViewer {
 					// Process next chapter, if any remaining.
 					++i;
 					(i < this.story.chapters.length) && nextChapter.call(this)
-				}, this.onError.bind(this));
+				}, this.reportError.bind(this));
 			}			
 			nextChapter.call(this); // Get the loop started.
 
@@ -103,7 +100,7 @@ class StoryViewer {
 		} else {
 			
 			for (let i = 0; i < this.story.chapters.length; ++i) {
-				this.loadChapter(i, this.story.chapters[i], this.onChapterLoaded.bind(this), this.onError.bind(this));
+				this.loadChapter(i, this.story.chapters[i], this.onChapterLoaded.bind(this), this.reportError.bind(this));
 			}
 		}
 	}
@@ -116,7 +113,7 @@ class StoryViewer {
 				if (xhr.status === 200) {
 					onSuccess && onSuccess.call(this, index, id, xhr.responseText);
 				} else if (xhr.status === 404) {
-					onError && onError.call(this, xhr.statusText, xhr.responseText);
+					onError && onError.call(this, xhr.statusText);
 				}
 			}
 		});
