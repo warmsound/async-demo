@@ -199,4 +199,91 @@ describe('StoryViewer', () => {
 			expect(sendAsyncSpy.callCount).to.equal(4);
 		});
 	});
+
+	it('Should insert chapters immediately once each is received', () => {
+		XHRMock.get('story', (req, res) => {
+			return res.status(200).body(JSON.stringify({
+				title: 'My Story',
+				chapters: ['chapter1', 'chapter2', 'chapter3']
+			}));
+		});
+
+		XHRMock.get(/^chapter/, (req, res) => {
+			var query = req.url().query;
+			var id = query && query.id;
+
+			var response = res.status(200).body(JSON.stringify({
+				id,
+				text: ''
+			}));
+
+			// Send response async, or else all Promises in sendAsyncSpy.returnValues[] resolve simultaneously.
+			return delay(response, 0);
+		});
+
+		viewer = new StoryViewer();
+
+		// After story response.
+		return sendAsyncSpy.returnValues[0].then(() => {
+
+			// After chapter1 response.
+			return sendAsyncSpy.returnValues[1].then(() => {
+				expect(insertChapterSpy.lastCall.calledWith('chapter1')).to.be.true;
+
+				// After chapter 2 response.
+				return sendAsyncSpy.returnValues[2].then(() => {
+					expect(insertChapterSpy.lastCall.calledWith('chapter2')).to.be.true;
+
+					// After chapter 3 response.
+					return sendAsyncSpy.returnValues[3].then(() => {
+						expect(insertChapterSpy.lastCall.calledWith('chapter3')).to.be.true;
+					});
+				});
+			});
+		});
+	});
+
+	it('Should insert chapters in story order, even if received out of order', () => {
+		XHRMock.get('story', (req, res) => {
+			return res.status(200).body(JSON.stringify({
+				title: 'My Story',
+				chapters: ['chapter1', 'chapter2', 'chapter3']
+			}));
+		});
+
+		var delays = {
+			chapter3: 500,
+			chapter1: 1000,
+			chapter2: 1500
+		};
+
+		XHRMock.get(/^chapter/, (req, res) => {
+			var query = req.url().query;
+			var id = query && query.id;
+
+			var response = res.status(200).body(JSON.stringify({
+				id,
+				text: ''
+			}));
+
+			return delay(response, delays[id]);
+		});
+
+		viewer = new StoryViewer();
+
+		// Can't use Promise.all() as Promises are pushed serially.
+		return sendAsyncSpy.returnValues[0].then(() => {
+			return sendAsyncSpy.returnValues[1].then(() => {
+				return sendAsyncSpy.returnValues[2].then(() => {
+
+					// After final chapter has been sent.
+					return sendAsyncSpy.returnValues[3].then(() => {
+						expect(insertChapterSpy.firstCall.calledWith('chapter1')).to.be.true;
+						expect(insertChapterSpy.secondCall.calledWith('chapter2')).to.be.true;
+						expect(insertChapterSpy.thirdCall.calledWith('chapter3')).to.be.true;
+					});
+				});
+			});
+		});
+	});
 });

@@ -17,6 +17,9 @@ class StoryViewer {
 	}
 
 	reset() {
+		this.story = null;
+		this.chapters.length = 0;
+
 		this.setLoaderVisible(false);
 		this.setStoryTitle('');
 		
@@ -28,6 +31,9 @@ class StoryViewer {
 	}
 
 	constructor() {
+		this.story = null;
+		this.chapters = [];
+
 		// Set a timeout, so we can check that loader has been shown for minimum time once story has loaded.
 		this.minLoaderTimeout = setTimeout(() => {
 			this.minLoaderTimeout = null;
@@ -38,8 +44,7 @@ class StoryViewer {
 			}
 		}, StoryViewer.MIN_LOADER_TIME);
 		this.setLoaderVisible(true);
-
-		this.story = null;
+		
 		this.loadStory(this.onStoryLoaded.bind(this));
 	}	
 
@@ -64,19 +69,18 @@ class StoryViewer {
 		this.setStoryTitle(this.story.title);
 
 		// Chapter requests should be in series: recursive callbacks!
-		if (this.story.serial) {
-			
-			// Work on copy of chapters array.
-			var chapters = [...this.story.chapters];
+		if (this.story.serial) {			
 
+			let i = 0;
 			function nextChapter() {
 
 				// Shift first chapter from array, and pass to loadChapter().
-				this.loadChapter(chapters.shift(), (id, data) => {
-					this.onChapterLoaded(id, data);
+				this.loadChapter(i, this.story.chapters[i], (index, id, data) => {
+					this.onChapterLoaded(index, id, data);
 
 					// Process next chapter, if any remaining.
-					chapters.length && nextChapter.call(this)
+					++i;
+					(i < this.story.chapters.length) && nextChapter.call(this)
 				});
 			}			
 			nextChapter.call(this); // Get the loop started.
@@ -84,25 +88,41 @@ class StoryViewer {
 		// Chapter requests should be in parallel.
 		} else {
 			for (let i = 0; i < this.story.chapters.length; ++i) {
-				this.loadChapter(this.story.chapters[i], this.onChapterLoaded.bind(this));
+				this.loadChapter(i, this.story.chapters[i], this.onChapterLoaded.bind(this));
 			}
 		}
 	}
 
-	loadChapter(id, callback) {
+	loadChapter(index, id, callback) {
 		var xhr = new XMLHttpRequest()
 		xhr.open('get', `chapter?id=${id}`);
 		xhr.addEventListener('readystatechange', () => {
 			if ((xhr.readyState === XMLHttpRequest.DONE) && (xhr.status === 200)) {
-				callback && callback.call(this, id, xhr.responseText);
+				callback && callback.call(this, index, id, xhr.responseText);
 			}
 		});
 		xhr.send();
 	}
 
-	onChapterLoaded(id, data) {
-		var chapter = JSON.parse(data);
-		this.insertChapter(id, chapter.text);
+	onChapterLoaded(index, id, data) {
+		this.chapters[index] = JSON.parse(data);;
+
+		// Check if all chapters are now available.
+		var allChaptersAvailable = true;
+		for (let i = 0; i < this.story.chapters.length; ++i) {
+			if (!this.chapters[i]) {
+				allChaptersAvailable = false;
+				break;
+			}
+		}
+
+		// Insert all chapters in correct sequence once all are available.
+		if (allChaptersAvailable) {
+			for (let i = 0; i < this.chapters.length; ++i) {
+				let chapter = this.chapters[i];
+				this.insertChapter(chapter.id, chapter.text);
+			}
+		}
 	}
 }
 
