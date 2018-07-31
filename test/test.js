@@ -11,6 +11,7 @@ describe('StoryViewer', () => {
 	var setLoaderVisibleSpy;
 	var setStoryTitleSpy;
 	var insertChapterSpy;
+	var reportErrorSpy;
 
 	/** 
 	 * Return a Promise that resolves with the specified value, after the specified timeout.
@@ -35,6 +36,7 @@ describe('StoryViewer', () => {
 		setLoaderVisibleSpy = sinon.spy(StoryViewer.prototype, 'setLoaderVisible');
 		setStoryTitleSpy = sinon.spy(StoryViewer.prototype, 'setStoryTitle');
 		insertChapterSpy = sinon.spy(StoryViewer.prototype, 'insertChapter');
+		reportErrorSpy = sinon.spy(StoryViewer.prototype, 'reportError');
 	});
 
 	afterEach(() => {
@@ -47,6 +49,7 @@ describe('StoryViewer', () => {
 		setLoaderVisibleSpy.resetHistory();
 		setStoryTitleSpy.resetHistory();
 		insertChapterSpy.resetHistory();
+		reportErrorSpy.resetHistory();
 	});
 
 	after(() => {
@@ -58,6 +61,7 @@ describe('StoryViewer', () => {
 		setLoaderVisibleSpy.restore();
 		setStoryTitleSpy.restore();
 		insertChapterSpy.restore();
+		reportErrorSpy.restore();
 	});
 
 	it('Should immediately show loader', () => {
@@ -139,13 +143,30 @@ describe('StoryViewer', () => {
 		}, 2000);
 	}).timeout(5000);
 
+	it('Should report returned error if story is not found', () => {
+		var status = 'Story not found';
+
+		XHRMock.get('story', (req, res) => {
+			return res.status(404).reason(status).body(JSON.stringify({
+				error: 'The requested story was not found.'
+			}));
+		});
+
+		viewer = new StoryViewer();
+
+		expect(reportErrorSpy.called).to.be.false;
+		return sendAsyncSpy.returnValues[0].then(() => {
+			expect(reportErrorSpy.calledWith(status)).to.be.true;
+		});
+	});
+
 	// First chapter should be requested; when first is received, second should be requested, etc.
 	it('Should request chapters in order serially immediately once story is received', () => {
 		XHRMock.get('story', (req, res) => {
 			return res.status(200).body(JSON.stringify({
 				title: 'My Story',
 				chapters: ['chapter1', 'chapter2', 'chapter3'],
-				serial: true
+				serial: true // Set serial flag to true.
 			}));
 		});
 
@@ -173,6 +194,76 @@ describe('StoryViewer', () => {
 				return sendAsyncSpy.returnValues[2].then(() => {
 					expect(openSpy.lastCall.calledWith('get', 'chapter?id=chapter3')).to.be.true;
 				});
+			});
+		});
+	});
+
+	it('Should report returned error if chapter is not found', () => {
+		var status = 'Chapter not found';
+
+		XHRMock.get('story', (req, res) => {
+			return res.status(200).body(JSON.stringify({
+				title: 'My Story',
+				chapters: ['chapter1', 'chapter2', 'chapter3'],
+				serial: true
+			}));
+		});
+
+		XHRMock.get(/^chapter/, (req, res) => {
+			var query = req.url().query;
+			var id = query && query.id;
+
+			return res.status(404).reason(status).body(JSON.stringify({
+				error: `The requested chapter '${id}' was not found.`
+			}));
+		});
+
+		viewer = new StoryViewer();
+
+		expect(reportErrorSpy.called).to.be.false;
+
+		// After story response.
+		return sendAsyncSpy.returnValues[0].then(() => {
+
+			// After chapter1 response.
+			return sendAsyncSpy.returnValues[1].then(() => {
+				expect(reportErrorSpy.calledWith(status)).to.be.true;
+			});
+		});
+	});
+
+	it('Should not request further chapters serially if chapter is not found', () => {
+		var status = 'Chapter not found';
+
+		XHRMock.get('story', (req, res) => {
+			return res.status(200).body(JSON.stringify({
+				title: 'My Story',
+				chapters: ['chapter1', 'chapter2', 'chapter3'],
+				serial: true
+			}));
+		});
+
+		XHRMock.get(/^chapter/, (req, res) => {
+			var query = req.url().query;
+			var id = query && query.id;
+
+			return res.status(404).reason(status).body(JSON.stringify({
+				error: `The requested chapter '${id}' was not found.`
+			}));
+		});
+
+		viewer = new StoryViewer();
+
+		expect(reportErrorSpy.called).to.be.false;
+
+		// After story response.
+		return sendAsyncSpy.returnValues[0].then(() => {
+
+			// After chapter1 response.
+			return sendAsyncSpy.returnValues[1].then(() => {
+
+				// No further requests.
+				expect(sendAsyncSpy.returnValues.length).to.equal(2);
 			});
 		});
 	});
