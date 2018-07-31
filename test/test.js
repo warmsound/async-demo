@@ -278,6 +278,7 @@ describe('StoryViewer', () => {
 
 					// After final chapter has been sent.
 					return sendAsyncSpy.returnValues[3].then(() => {
+						expect(insertChapterSpy.callCount).to.equal(3);
 						expect(insertChapterSpy.firstCall.calledWith('chapter1')).to.be.true;
 						expect(insertChapterSpy.secondCall.calledWith('chapter2')).to.be.true;
 						expect(insertChapterSpy.thirdCall.calledWith('chapter3')).to.be.true;

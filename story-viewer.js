@@ -18,7 +18,7 @@ class StoryViewer {
 
 	reset() {
 		this.story = null;
-		this.chapters.length = 0;
+		this.chapters = null;
 
 		this.setLoaderVisible(false);
 		this.setStoryTitle('');
@@ -32,7 +32,7 @@ class StoryViewer {
 
 	constructor() {
 		this.story = null;
-		this.chapters = [];
+		this.chapters = null;
 
 		// Set a timeout, so we can check that loader has been shown for minimum time once story has loaded.
 		this.minLoaderTimeout = setTimeout(() => {
@@ -66,6 +66,8 @@ class StoryViewer {
 		}
 
 		this.story = JSON.parse(data);
+		this.chapters = Array(this.story.chapters.length).fill(null); // null means: "chapter not yet received".
+
 		this.setStoryTitle(this.story.title);
 
 		// Chapter requests should be in series: recursive callbacks!
@@ -105,21 +107,20 @@ class StoryViewer {
 	}
 
 	onChapterLoaded(index, id, data) {
-		this.chapters[index] = JSON.parse(data);;
+		this.chapters[index] = JSON.parse(data);
 
-		// Check if all chapters are now available.
-		var allChaptersAvailable = true;
-		for (let i = 0; i < this.story.chapters.length; ++i) {
-			if (!this.chapters[i]) {
-				allChaptersAvailable = false;
+		// Insert all contiguous received chapters, in order.
+		for (let i = 0; i < this.chapters.length; ++i) {
+			let chapter = this.chapters[i];
+
+			// This chapter was not yet received. Do not add any more yet.
+			if (chapter === null) {
 				break;
 			}
-		}
 
-		// Insert all chapters in correct sequence once all are available.
-		if (allChaptersAvailable) {
-			for (let i = 0; i < this.chapters.length; ++i) {
-				let chapter = this.chapters[i];
+			//  This chapter was received (now or previously), but was not yet inserted. Insert now.
+			if (!chapter.inserted) {
+				chapter.inserted = true;
 				this.insertChapter(chapter.id, chapter.text);
 			}
 		}
