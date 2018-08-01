@@ -95,6 +95,7 @@ describe('StoryViewer', () => {
 
 		// sendAsyncSpy() returns a Promise that resolves when the above response has been sent.
 		// Perform checks on next frame, to allow microtasks (Promises) to run first.
+		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
 		sendAsyncSpy.returnValues[0].then(() => {
 			setTimeout(() => {
 				expect(setLoaderVisibleSpy.calledWith(false)).to.be.true;
@@ -118,6 +119,7 @@ describe('StoryViewer', () => {
 		expect(setStoryTitleSpy.called).to.be.false;
 
 		// After story response.
+		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
 		sendAsyncSpy.returnValues[0].then(() => {
 			setTimeout(() => {
 				expect(setStoryTitleSpy.calledWith('My Story')).to.be.true;
@@ -140,6 +142,7 @@ describe('StoryViewer', () => {
 		expect(setLoaderVisibleSpy.calledWith(false)).to.be.false;
 
 		// Loader should not be hidden immediately after receiving story.
+		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
 		sendAsyncSpy.returnValues[0].then(() => {
 			expect(setLoaderVisibleSpy.calledWith(false)).to.be.false;
 		}).then(() => {
@@ -165,6 +168,7 @@ describe('StoryViewer', () => {
 		viewer = new StoryViewer();
 
 		expect(reportErrorSpy.called).to.be.false;
+		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
 		sendAsyncSpy.returnValues[0].then(() => {
 			setTimeout(() => {
 				expect(reportErrorSpy.calledWith(status)).to.be.true;
@@ -196,14 +200,17 @@ describe('StoryViewer', () => {
 		viewer = new StoryViewer();
 
 		// After story response.
+		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
 		return sendAsyncSpy.returnValues[0].then(() => {
 			expect(openSpy.lastCall.calledWith('get', 'chapter?id=chapter1')).to.be.true;
 
 			// After chapter1 response.
+			expect(sendAsyncSpy.returnValues[1]).not.to.be.undefined;
 			return sendAsyncSpy.returnValues[1].then(() => {
 				expect(openSpy.lastCall.calledWith('get', 'chapter?id=chapter2')).to.be.true;
 
 				// After chapter 2 response.
+				expect(sendAsyncSpy.returnValues[2]).not.to.be.undefined;
 				return sendAsyncSpy.returnValues[2].then(() => {
 					expect(openSpy.lastCall.calledWith('get', 'chapter?id=chapter3')).to.be.true;
 				});
@@ -236,9 +243,11 @@ describe('StoryViewer', () => {
 		expect(reportErrorSpy.called).to.be.false;
 
 		// After story response.
+		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
 		return sendAsyncSpy.returnValues[0].then(() => {
 
 			// After chapter1 response.
+			expect(sendAsyncSpy.returnValues[1]).not.to.be.undefined;
 			return sendAsyncSpy.returnValues[1].then(() => {
 				expect(reportErrorSpy.calledWith(status)).to.be.true;
 			});
@@ -270,9 +279,11 @@ describe('StoryViewer', () => {
 		expect(reportErrorSpy.called).to.be.false;
 
 		// After story response.
+		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
 		return sendAsyncSpy.returnValues[0].then(() => {
 
 			// After chapter1 response.
+			expect(sendAsyncSpy.returnValues[1]).not.to.be.undefined;
 			return sendAsyncSpy.returnValues[1].then(() => {
 
 				// No further requests.
@@ -292,6 +303,7 @@ describe('StoryViewer', () => {
 
 		viewer = new StoryViewer();
 
+		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
 		return sendAsyncSpy.returnValues[0].then(() => {
 
 			// In parallel mode, chapters can be requested in any order.
@@ -328,17 +340,21 @@ describe('StoryViewer', () => {
 		viewer = new StoryViewer();
 
 		// After story response.
+		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
 		return sendAsyncSpy.returnValues[0].then(() => {
 
 			// After chapter1 response.
+			expect(sendAsyncSpy.returnValues[1]).not.to.be.undefined;
 			return sendAsyncSpy.returnValues[1].then(() => {
 				expect(insertChapterSpy.lastCall.calledWith('chapter1')).to.be.true;
 
 				// After chapter 2 response.
+				expect(sendAsyncSpy.returnValues[2]).not.to.be.undefined;
 				return sendAsyncSpy.returnValues[2].then(() => {
 					expect(insertChapterSpy.lastCall.calledWith('chapter2')).to.be.true;
 
 					// After chapter 3 response.
+					expect(sendAsyncSpy.returnValues[3]).not.to.be.undefined;
 					return sendAsyncSpy.returnValues[3].then(() => {
 						expect(insertChapterSpy.lastCall.calledWith('chapter3')).to.be.true;
 					});
@@ -376,11 +392,15 @@ describe('StoryViewer', () => {
 		viewer = new StoryViewer();
 
 		// Can't use Promise.all() as Promises are pushed serially.
+		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
 		return sendAsyncSpy.returnValues[0].then(() => {
+			expect(sendAsyncSpy.returnValues[1]).not.to.be.undefined;
 			return sendAsyncSpy.returnValues[1].then(() => {
+				expect(sendAsyncSpy.returnValues[2]).not.to.be.undefined;
 				return sendAsyncSpy.returnValues[2].then(() => {
 
 					// After final chapter has been sent.
+					expect(sendAsyncSpy.returnValues[3]).not.to.be.undefined;
 					return sendAsyncSpy.returnValues[3].then(() => {
 						expect(insertChapterSpy.callCount).to.equal(3);
 						expect(insertChapterSpy.firstCall.calledWith('chapter1')).to.be.true;
