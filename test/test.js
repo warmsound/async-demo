@@ -124,7 +124,7 @@ describe('StoryViewer', () => {
 			setTimeout(() => {
 				expect(setStoryTitleSpy.calledWith('My Story')).to.be.true;
 				done();
-			}, 0);			
+			}, 0);
 		});
 	}).timeout(5000);
 
@@ -178,7 +178,7 @@ describe('StoryViewer', () => {
 	});
 
 	// First chapter should be requested; when first is received, second should be requested, etc.
-	it('Should request chapters in order serially immediately once story is received', () => {
+	it('Should request chapters in order serially immediately once story is received', done => {
 		XHRMock.get('story', (req, res) => {
 			return res.status(200).body(JSON.stringify({
 				title: 'My Story',
@@ -191,30 +191,41 @@ describe('StoryViewer', () => {
 			var query = req.url().query;
 			var id = query && query.id;
 
-			return res.status(200).body(JSON.stringify({
+			var response = res.status(200).body(JSON.stringify({
 				id,
 				text: ''
 			}));
+
+			// Response should be async so that any request Promise chain does not resolve immediately.
+			return delay(response, 100);
 		});
 
 		viewer = new StoryViewer();
 
 		// After story response.
 		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
-		return sendAsyncSpy.returnValues[0].then(() => {
-			expect(openSpy.lastCall.calledWith('get', 'chapter?id=chapter1')).to.be.true;
+		sendAsyncSpy.returnValues[0].then(() => {
+			setTimeout(() => {
+				expect(openSpy.lastCall.calledWith('get', 'chapter?id=chapter1')).to.be.true;
 
-			// After chapter1 response.
-			expect(sendAsyncSpy.returnValues[1]).not.to.be.undefined;
-			return sendAsyncSpy.returnValues[1].then(() => {
-				expect(openSpy.lastCall.calledWith('get', 'chapter?id=chapter2')).to.be.true;
+				// After chapter1 response.
+				expect(sendAsyncSpy.returnValues[1]).not.to.be.undefined;
+				sendAsyncSpy.returnValues[1].then(() => {
+					setTimeout(() => {
+						expect(openSpy.lastCall.calledWith('get', 'chapter?id=chapter2')).to.be.true;
 
-				// After chapter 2 response.
-				expect(sendAsyncSpy.returnValues[2]).not.to.be.undefined;
-				return sendAsyncSpy.returnValues[2].then(() => {
-					expect(openSpy.lastCall.calledWith('get', 'chapter?id=chapter3')).to.be.true;
+						// After chapter 2 response.
+						expect(sendAsyncSpy.returnValues[2]).not.to.be.undefined;
+						sendAsyncSpy.returnValues[2].then(() => {
+							setTimeout(() => {
+								expect(openSpy.lastCall.calledWith('get', 'chapter?id=chapter3')).to.be.true;
+
+								setTimeout(done, 0);
+							}, 0);
+						});
+					}, 0);
 				});
-			});
+			}, 0);
 		});
 	});
 

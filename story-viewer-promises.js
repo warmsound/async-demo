@@ -87,25 +87,6 @@ class StoryViewer {
 	}
 	//#endregion
 
-	constructor() {
-		this.story = null;
-		this.chapters = null;
-
-		var storyPromise = this.request('story').then(storyData => {
-			this.story = JSON.parse(storyData);
-			this.setStoryTitle(this.story.title);
-		}).catch(this.reportError);
-
-		var minLoaderDelayPromise = new Promise((resolve, reject) => {
-			setTimeout(resolve, StoryViewer.MIN_LOADER_TIME);
-		});
-
-		this.setLoaderVisible(true);
-		Promise.all([storyPromise, minLoaderDelayPromise]).then(() => {
-			this.setLoaderVisible(false);
-		});
-	}
-
 	request(url) {
 		return new Promise((resolve, reject) => {
 			var xhr = new XMLHttpRequest()
@@ -122,6 +103,42 @@ class StoryViewer {
 			xhr.send();
 		});
 	}
+
+	constructor() {
+		//this.story = null;
+		//this.chapters = null;
+
+		this.requestStory();
+	}
+
+	requestStory() {
+		var storyPromise = this.request('story').then(storyData => {
+			var story = JSON.parse(storyData);
+			this.setStoryTitle(story.title);
+			this.requestChapters(story);
+		}).catch(this.reportError);
+
+		var minLoaderDelayPromise = new Promise((resolve, reject) => {
+			setTimeout(resolve, StoryViewer.MIN_LOADER_TIME);
+		});
+
+		this.setLoaderVisible(true);
+		Promise.all([storyPromise, minLoaderDelayPromise]).then(() => {
+			this.setLoaderVisible(false);
+		});
+	}
+
+	requestChapters(story) {
+		if (story.serial) {
+			story.chapters.reduce((promiseChain, thisChapterId) => {
+				return promiseChain.then(() => {
+					return this.request(`chapter?id=${thisChapterId}`);
+				});
+			}, Promise.resolve());
+		} else {
+
+		}
+	}	
 }
 
 /**
