@@ -6,7 +6,7 @@ The Story Viewer app makes asynchronous requests to a mock server, first to down
 
 The aim is implement the Story Viewer app first using callbacks, and then using Promises (and optionally `async/await`), to demonstrate the benefits of Promises.
 
-The app will use `XMLHttpRequest` to make the server requests. The default implementation is replaced by a `MockXMLHttpRequest` from the `xhr-mock' library.
+The app will use `XMLHttpRequest` to make the server requests. The default implementation is replaced by a `MockXMLHttpRequest` from the `xhr-mock` library.
 
 ## Technical detail
 
