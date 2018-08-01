@@ -192,4 +192,7 @@ class StoryViewer {
 	}
 }
 
+/**
+ * Minimum number of milliseconds the loader should be shown for.
+ */
 StoryViewer.MIN_LOADER_TIME = 1000;

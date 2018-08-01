@@ -93,6 +93,26 @@ class StoryViewer {
 
 		// TODO.
 	}
+
+	/*
+	Sample usage of XMLHttpRequest:
+
+	var xhr = new XMLHttpRequest()
+	xhr.open('get', 'story'); // 'story' is an example URL.
+	xhr.addEventListener('readystatechange', () => {
+		if (xhr.readyState === XMLHttpRequest.DONE) {
+			if (xhr.status === 200) {
+				// Success handling.
+			} else if (xhr.status === 404) {
+				// Error handling.
+			}
+		}
+	});
+	xhr.send();
+	*/
 }
 
+/**
+ * Minimum number of milliseconds the loader should be shown for.
+ */
 StoryViewer.MIN_LOADER_TIME = 1000;
