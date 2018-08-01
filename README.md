@@ -23,7 +23,7 @@ The app runs entirely in the browser (there's no need to run a `node` process). 
 
 Within each HTML file, you can choose which implementation of the `StoryViewer` class you want to run. Sample implementations using callbacks (`story-viewer-callbacks.js`) and Promises (`story-viewer-promises.js`) are included. Uncomment the `<script`> tag for the file you want run.
 
-A commented template implementation for `StoryViewer` is in `story-viewer.js`. You can use this as a starting point for your own implementation.
+A commented template implementation for `StoryViewer` is in `story-viewer.js`. You can use this as a starting point for your own implementation. **Leave the `#region Pre-defined API` alone, as tests depend on it.** Begin implementing from the `// TODO.` in `constructor()`.
 
 ### Server API
 
