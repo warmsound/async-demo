@@ -24,3 +24,31 @@ The app runs entirely in the browser (there's no need to run a `node` process). 
 Within each HTML file, you can choose which implementation of the `StoryViewer` class you want to run. Sample implementations using callbacks (`story-viewer-callbacks.js`) and Promises (`story-viewer-promises.js`) are included. Uncomment the `<script`> tag for the file you want run.
 
 A commented template implementation for `StoryViewer` is in `story-viewer.js`. You can use this as a starting point for your own implementation.
+
+### Server API
+
+Request the story from the server using a `GET 'story'` request.
+
+The response will be a status 200 with a JSON string representation of the following object:
+```
+{
+  title: 'My Story',
+  chapters: ['chapter1', 'chapter2', 'chapter3', 'chapter4']
+  serial: true
+}
+```
+
+If the `serial` flag is set, chapters should be requested one after the other i.e. no overlapping requests.
+If the `serial` flag is not set, chapters can be requested in parallel.
+
+Request each chapter from the server using a `GET 'chapter?id=<ID>'` request. The chapter IDs are returned as the `chapters` array in the story definition above.
+
+The response will be a status `200` with a JSON string representation of the following object:
+```
+{
+  id: 'chapter1',
+  text: 'Lorem ipsum'
+}
+```
+
+Responses may fail with status `404` if the story, or chapter, is not found.
