@@ -140,7 +140,12 @@ class StoryViewer {
 				return promiseChain.then(() => {
 
 					// If request is rejected, remained of chain will be skipped; execution will jump to top-level catch().
-					return this.request(`chapter?id=${chapterId}`);
+					return this.request(`chapter?id=${chapterId}`).then(chapterData => {
+
+						// Insert received chapter: safe to do in serial order.
+						var chapter = JSON.parse(chapterData);
+						this.insertChapter(chapter.id, chapter.text);
+					});
 				});
 			}, Promise.resolve()); // Initialise chain with Resolved Promise at head.
 
@@ -148,10 +153,13 @@ class StoryViewer {
 		
 			// Create an array of chapter requests, and pass to Promise.all().
 			return Promise.all(story.chapters.map(chapterId => {
-				this.request(`chapter?id=${chapterId}`);
+				this.request(`chapter?id=${chapterId}`).then(chapterData => {
+					var chapter = JSON.parse(chapterData);
+					this.insertChapter(chapter.id, chapter.text);
+				});
 			}));
 		}
-	}	
+	}
 }
 
 /**

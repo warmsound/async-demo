@@ -340,7 +340,7 @@ describe('StoryViewer', () => {
 		});
 	});
 
-	it('Should insert chapters immediately once each is received', () => {
+	it('Should insert chapters immediately once each is received', done => {
 		XHRMock.get('story', (req, res) => {
 			return res.status(200).body(JSON.stringify({
 				title: 'My Story',
@@ -365,25 +365,34 @@ describe('StoryViewer', () => {
 
 		// After story response.
 		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
-		return sendAsyncSpy.returnValues[0].then(() => {
+		sendAsyncSpy.returnValues[0].then(() => {
+			setTimeout(() => {
 
-			// After chapter1 response.
-			expect(sendAsyncSpy.returnValues[1]).not.to.be.undefined;
-			return sendAsyncSpy.returnValues[1].then(() => {
-				expect(insertChapterSpy.lastCall.calledWith('chapter1')).to.be.true;
+				// After chapter1 response.
+				expect(sendAsyncSpy.returnValues[1]).not.to.be.undefined;
+				sendAsyncSpy.returnValues[1].then(() => {
+					setTimeout(() => {
+						expect(insertChapterSpy.firstCall.calledWith('chapter1')).to.be.true;
 
-				// After chapter 2 response.
-				expect(sendAsyncSpy.returnValues[2]).not.to.be.undefined;
-				return sendAsyncSpy.returnValues[2].then(() => {
-					expect(insertChapterSpy.lastCall.calledWith('chapter2')).to.be.true;
+						// After chapter 2 response.
+						expect(sendAsyncSpy.returnValues[2]).not.to.be.undefined;
+						sendAsyncSpy.returnValues[2].then(() => {
+							setTimeout(() => {
+								expect(insertChapterSpy.secondCall.calledWith('chapter2')).to.be.true;
 
-					// After chapter 3 response.
-					expect(sendAsyncSpy.returnValues[3]).not.to.be.undefined;
-					return sendAsyncSpy.returnValues[3].then(() => {
-						expect(insertChapterSpy.lastCall.calledWith('chapter3')).to.be.true;
-					});
+								// After chapter 3 response.
+								expect(sendAsyncSpy.returnValues[3]).not.to.be.undefined;
+								sendAsyncSpy.returnValues[3].then(() => {
+									setTimeout(() => {
+										expect(insertChapterSpy.thirdCall.calledWith('chapter3')).to.be.true;
+										done();
+									}, 0);
+								});
+							}, 0);
+						});
+					}, 0);
 				});
-			});
+			}, 0);
 		});
 	});
 
