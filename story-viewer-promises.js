@@ -115,7 +115,9 @@ class StoryViewer {
 		var storyPromise = this.request('story').then(storyData => {
 			var story = JSON.parse(storyData);
 			this.setStoryTitle(story.title);
-			this.requestChapters(story);
+
+			// Ensure any errors thrown by chapter requests are caught below.
+			return this.requestChapters(story);
 		}).catch(this.reportError);
 
 		var minLoaderDelayPromise = new Promise((resolve, reject) => {
@@ -130,13 +132,24 @@ class StoryViewer {
 
 	requestChapters(story) {
 		if (story.serial) {
-			story.chapters.reduce((promiseChain, thisChapterId) => {
-				return promiseChain.then(() => {
-					return this.request(`chapter?id=${thisChapterId}`);
-				});
-			}, Promise.resolve());
-		} else {
 
+			// Return final Promise chain from reduce(), so that any errors are handled at the top level.
+			return story.chapters.reduce((promiseChain, chapterId) => {
+
+				// Enqueue each chapter request.
+				return promiseChain.then(() => {
+
+					// If request is rejected, remained of chain will be skipped; execution will jump to top-level catch().
+					return this.request(`chapter?id=${chapterId}`);
+				});
+			}, Promise.resolve()); // Initialise chain with Resolved Promise at head.
+
+		} else {
+		
+			// Create an array of chapter requests, and pass to Promise.all().
+			return Promise.all(story.chapters.map(chapterId => {
+				this.request(`chapter?id=${chapterId}`);
+			}));
 		}
 	}	
 }

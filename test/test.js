@@ -232,7 +232,7 @@ describe('StoryViewer', () => {
 		});
 	});
 
-	it('Should report returned error if chapter is not found', () => {
+	it('Should report returned error if chapter is not found', done => {
 		var status = 'Chapter not found';
 
 		XHRMock.get('story', (req, res) => {
@@ -258,17 +258,20 @@ describe('StoryViewer', () => {
 
 		// After story response.
 		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
-		return sendAsyncSpy.returnValues[0].then(() => {
+		sendAsyncSpy.returnValues[0].then(() => {
+			setTimeout(() => {
 
-			// After chapter1 response.
-			expect(sendAsyncSpy.returnValues[1]).not.to.be.undefined;
-			return sendAsyncSpy.returnValues[1].then(() => {
-				expect(reportErrorSpy.calledWith(status)).to.be.true;
-			});
+				// After chapter1 response.
+				expect(sendAsyncSpy.returnValues[1]).not.to.be.undefined;
+				sendAsyncSpy.returnValues[1].then(() => {
+					expect(reportErrorSpy.calledWith(status)).to.be.true;
+					done();
+				});
+			}, 0);
 		});
 	});
 
-	it('Should not request further chapters serially if chapter is not found', () => {
+	it('Should not request further chapters serially if chapter is not found', done => {
 		var status = 'Chapter not found';
 
 		XHRMock.get('story', (req, res) => {
@@ -294,15 +297,20 @@ describe('StoryViewer', () => {
 
 		// After story response.
 		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
-		return sendAsyncSpy.returnValues[0].then(() => {
+		sendAsyncSpy.returnValues[0].then(() => {
+			setTimeout(() => {
 
-			// After chapter1 response.
-			expect(sendAsyncSpy.returnValues[1]).not.to.be.undefined;
-			return sendAsyncSpy.returnValues[1].then(() => {
+				// After chapter1 response.
+				expect(sendAsyncSpy.returnValues[1]).not.to.be.undefined;
+				sendAsyncSpy.returnValues[1].then(() => {
+					setTimeout(() => {
 
-				// No further requests.
-				expect(sendAsyncSpy.returnValues.length).to.equal(2);
-			});
+						// No further requests.
+						expect(sendAsyncSpy.returnValues.length).to.equal(2);
+						done();
+					}, 0);
+				});
+			}, 0);
 		});
 	});
 
@@ -319,14 +327,16 @@ describe('StoryViewer', () => {
 
 		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
 		return sendAsyncSpy.returnValues[0].then(() => {
+			setTimeout(() => {
 
-			// In parallel mode, chapters can be requested in any order.
-			expect(openSpy.calledWith('get', 'chapter?id=chapter1')).to.be.true;
-			expect(openSpy.calledWith('get', 'chapter?id=chapter2')).to.be.true;
-			expect(openSpy.calledWith('get', 'chapter?id=chapter3')).to.be.true;
+				// In parallel mode, chapters can be requested in any order.
+				expect(openSpy.calledWith('get', 'chapter?id=chapter1')).to.be.true;
+				expect(openSpy.calledWith('get', 'chapter?id=chapter2')).to.be.true;
+				expect(openSpy.calledWith('get', 'chapter?id=chapter3')).to.be.true;
 
-			// First spy call is initial story request; chapters after.
-			expect(sendAsyncSpy.callCount).to.equal(4);
+				// First spy call is initial story request; chapters after.
+				expect(sendAsyncSpy.callCount).to.equal(4);
+			}, 0);
 		});
 	});
 
