@@ -232,7 +232,7 @@ describe('StoryViewer', () => {
 		});
 	});
 
-	it('Should report returned error if chapter is not found', () => {
+	it('Should report returned error if chapter is not found', done => {
 		var status = 'Chapter not found';
 
 		XHRMock.get('story', (req, res) => {
@@ -258,13 +258,16 @@ describe('StoryViewer', () => {
 
 		// After story response.
 		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
-		return sendAsyncSpy.returnValues[0].then(() => {
+		sendAsyncSpy.returnValues[0].then(() => {
+			setTimeout(() => {
 
-			// After chapter1 response.
-			expect(sendAsyncSpy.returnValues[1]).not.to.be.undefined;
-			return sendAsyncSpy.returnValues[1].then(() => {
-				expect(reportErrorSpy.calledWith(status)).to.be.true;
-			});
+				// After chapter1 response.
+				expect(sendAsyncSpy.returnValues[1]).not.to.be.undefined;
+				sendAsyncSpy.returnValues[1].then(() => {
+					expect(reportErrorSpy.calledWith(status)).to.be.true;
+					done();
+				});
+			}, 0);
 		});
 	});
 
