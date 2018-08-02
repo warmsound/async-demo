@@ -138,6 +138,8 @@ class StoryViewer {
 
 				// Enqueue each chapter request.
 				return promiseChain.then(() => {
+
+					// If request is rejected, remained of chain will be skipped; execution will jump to top-level catch().
 					return this.request(`chapter?id=${thisChapterId}`);
 				});
 			}, Promise.resolve()); // Initialise chain with Resolved Promise at head.
