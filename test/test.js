@@ -220,7 +220,10 @@ describe('StoryViewer', () => {
 							setTimeout(() => {
 								expect(openSpy.lastCall.calledWith('get', 'chapter?id=chapter3')).to.be.true;
 
-								setTimeout(done, 0);
+								// After chapter 3 response.
+								// Wait for final chapter to be inserted, before resetting DOM.
+								expect(sendAsyncSpy.returnValues[3]).not.to.be.undefined;
+								sendAsyncSpy.returnValues[3].then(done);
 							}, 0);
 						});
 					}, 0);

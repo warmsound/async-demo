@@ -1,7 +1,7 @@
 {
   "name": "async-demo",
   "version": "1.0.0",
-  "description": "Document viewer app to demonstrate async JavaScript features",
+  "description": "Story Viewer app to demonstrate async JavaScript features",
   "main": "story-viewer.js",
   "dependencies": {
     "xhr-mock": "^2.4.1"
