@@ -327,14 +327,16 @@ describe('StoryViewer', () => {
 
 		expect(sendAsyncSpy.returnValues[0]).not.to.be.undefined;
 		return sendAsyncSpy.returnValues[0].then(() => {
+			setTimeout(() => {
 
-			// In parallel mode, chapters can be requested in any order.
-			expect(openSpy.calledWith('get', 'chapter?id=chapter1')).to.be.true;
-			expect(openSpy.calledWith('get', 'chapter?id=chapter2')).to.be.true;
-			expect(openSpy.calledWith('get', 'chapter?id=chapter3')).to.be.true;
+				// In parallel mode, chapters can be requested in any order.
+				expect(openSpy.calledWith('get', 'chapter?id=chapter1')).to.be.true;
+				expect(openSpy.calledWith('get', 'chapter?id=chapter2')).to.be.true;
+				expect(openSpy.calledWith('get', 'chapter?id=chapter3')).to.be.true;
 
-			// First spy call is initial story request; chapters after.
-			expect(sendAsyncSpy.callCount).to.equal(4);
+				// First spy call is initial story request; chapters after.
+				expect(sendAsyncSpy.callCount).to.equal(4);
+			}, 0);
 		});
 	});
 

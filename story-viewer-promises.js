@@ -134,17 +134,22 @@ class StoryViewer {
 		if (story.serial) {
 
 			// Return final Promise chain from reduce(), so that any errors are handled at the top level.
-			return story.chapters.reduce((promiseChain, thisChapterId) => {
+			return story.chapters.reduce((promiseChain, chapterId) => {
 
 				// Enqueue each chapter request.
 				return promiseChain.then(() => {
 
 					// If request is rejected, remained of chain will be skipped; execution will jump to top-level catch().
-					return this.request(`chapter?id=${thisChapterId}`);
+					return this.request(`chapter?id=${chapterId}`);
 				});
 			}, Promise.resolve()); // Initialise chain with Resolved Promise at head.
+
 		} else {
-			// TODO.
+		
+			// Create an array of chapter requests, and pass to Promise.all().
+			return Promise.all(story.chapters.map(chapterId => {
+				this.request(`chapter?id=${chapterId}`);
+			}));
 		}
 	}	
 }
