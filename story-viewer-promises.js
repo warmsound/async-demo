@@ -153,7 +153,7 @@ class StoryViewer {
 		
 			// Create an array of chapter requests, and pass to Promise.all().
 			return Promise.all(story.chapters.map(chapterId => {
-				this.request(`chapter?id=${chapterId}`).then(chapterData => {
+				return this.request(`chapter?id=${chapterId}`).then(chapterData => {
 					var chapter = JSON.parse(chapterData);
 					this.insertChapter(chapter.id, chapter.text);
 				});
