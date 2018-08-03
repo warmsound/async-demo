@@ -102,9 +102,9 @@ class StoryViewer {
 	xhr.addEventListener('readystatechange', () => {
 		if (xhr.readyState === XMLHttpRequest.DONE) {
 			if (xhr.status === 200) {
-				// Success handling.
+				// Success handling: xhr.responseText.
 			} else if (xhr.status === 404) {
-				// Error handling.
+				// Error handling: xhr.statusText.
 			}
 		}
 	});
